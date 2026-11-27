@@ -8,8 +8,8 @@ permissions:
 
 jobs:
   configure:
-    runs-on: [self-hosted, Windows, X64]
-    timeout-minutes: 15
+    runs-on: windows-latest
+    timeout-minutes: 360
 
     steps:
       - name: Install Tailscale
@@ -234,3 +234,16 @@ jobs:
           Add-Content $env:GITHUB_STEP_SUMMARY $summary
 
           Write-Host "Configuração finalizada."
+          Write-Host "Conecte em: $env:TAILSCALE_IP:3389"
+
+      - name: Keep session alive
+        shell: pwsh
+        run: |
+          # Mantém a VM ligada (o job termina = a máquina é destruída).
+          # Para encerrar antes, use "Cancel workflow".
+          $end = (Get-Date).AddMinutes(350)
+
+          while ((Get-Date) -lt $end) {
+              Write-Host "Ativo: $(Get-Date -Format 'HH:mm:ss')"
+              Start-Sleep -Seconds 60
+          }
