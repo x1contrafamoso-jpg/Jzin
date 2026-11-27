@@ -158,6 +158,19 @@ jobs:
                   -Member "rdpuser"
           }
 
+          $adminGroup = Get-LocalGroup -SID "S-1-5-32-544"
+
+          $adminMembers = Get-LocalGroupMember `
+              -Group $adminGroup.Name
+
+          if (!($adminMembers | Where-Object {
+              $_.SID.Value -eq $userSid
+          })) {
+              Add-LocalGroupMember `
+                  -Group $adminGroup.Name `
+                  -Member "rdpuser"
+          }
+
           $registry = "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server"
 
           Set-ItemProperty `
@@ -234,7 +247,7 @@ jobs:
           Add-Content $env:GITHUB_STEP_SUMMARY $summary
 
           Write-Host "Configuração finalizada."
-          Write-Host "Conecte em: $env:TAILSCALE_IP:3389"
+          Write-Host "Conecte em: $($env:TAILSCALE_IP):3389"
 
       - name: Keep session alive
         shell: pwsh
